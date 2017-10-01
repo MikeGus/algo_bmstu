@@ -1,3 +1,5 @@
+import win32api
+
 def levensteinRecursive3(stringOriginal, stringResult):
     if stringOriginal == "":
         return len(stringResult)
@@ -82,9 +84,21 @@ def levensteinIterative4(stringOriginal, stringResult):
     return storage[1][-1]
     
 
-str1 = "maam"
-str2 = "mama"
+str1 = "manhattan"
+str2 = "manahttan"
 
-print(levensteinRecursive3(str1, str2))
-print(levensteinIterative3(str1, str2))
-print(levensteinIterative4(str1, str2))
+tick1 = win32api.GetTickCount()
+#levRec3 = levensteinRecursive3(str1, str2)
+levRec3Time = win32api.GetTickCount() - tick1
+
+tick1 = win32api.GetTickCount()
+levIt3 = levensteinIterative3(str1, str2)
+levIt3Time = win32api.GetTickCount() - tick1
+
+tick1 = win32api.GetTickCount()
+levIt4 = levensteinIterative4(str1, str2)
+levIt4Time = win32api.GetTickCount() - tick1
+
+#print(levRec3, " ", levRec3Time)
+print(levIt3, " ", levIt3Time)
+print(levIt4, " ", levIt4Time)
