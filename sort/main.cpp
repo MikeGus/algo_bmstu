@@ -46,12 +46,18 @@ void insertionSort(int*& array, unsigned arraySize, unsigned long long& time) {
 
 	for (unsigned i = 1; i < arraySize; ++i) {
 		int currentElement = array[i];
-		for (unsigned j = 0; j < i; ++j) {
-			if (currentElement < array[j]) {
+		bool first = true;
+		for (unsigned j = i; j > 0; --j) {
+			if (currentElement >= array[j - 1]) {
 				memmove(array + j + 1, array + j, (i - j) * sizeof(int));
 				array[j] = currentElement;
+				first = false;
 				break;
 			}
+		}
+		if (first) {
+			memmove(array + 1, array, i * sizeof(int));
+			array[0] = currentElement;
 		}
 	}
 
@@ -133,16 +139,8 @@ void testAlgorithm(unsigned arraySize, void (*func)(int*&, unsigned, unsigned lo
 
 int main()
 {
-	unsigned arraySize = 1000;
+	unsigned arraySize = 5000;
 	unsigned numberOfTests = 100;
-
-	int* ar = makeArray(10, 1);
-	printArray(ar, 10);
-	unsigned long long a;
-	insertionSort(ar, 10, a);
-	printArray(ar, 10);
-	delete[] ar;
-
 
 	std::cout << "\nSelection sort:" << std::endl;
 	testAlgorithm(arraySize, selectionSort, numberOfTests);

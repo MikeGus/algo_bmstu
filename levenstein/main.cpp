@@ -7,7 +7,6 @@
 
 int levensteinRecursive3(char* strOrig, char* strRes, unsigned long long& time) {
 
-//	unsigned long long tickStart = __rdtsc();
 	unsigned long long tickStart = __rdtsc();
 
 	unsigned lenOrig = strlen(strOrig);
@@ -146,7 +145,7 @@ int levensteinIterative4(char* strOrig, char* strRes, unsigned long long& time) 
 
 	time = __rdtsc() - tickStart;
 
-	int result = storage[0][columns - 1];
+	int result = storage[1][columns - 1];
 	delete storage[0];
 	delete storage[1];
 	delete storage[2];
@@ -157,8 +156,8 @@ int levensteinIterative4(char* strOrig, char* strRes, unsigned long long& time) 
 
 int main()
 {
-	char str1[] = "manhattan";
-	char str2[] = "manahttan";
+	char str1[] = "abcd";
+	char str2[] = "badc";
 
 	int numberOfTests = 10;
 

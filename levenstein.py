@@ -85,7 +85,7 @@ def levensteinIterative4(stringOriginal, stringResult):
     
 
 str1 = "manhattan"
-str2 = "manahttan"
+str2 = "mahnattan"
 
 tick1 = win32api.GetTickCount()
 #levRec3 = levensteinRecursive3(str1, str2)
