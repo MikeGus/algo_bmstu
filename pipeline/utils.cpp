@@ -36,6 +36,12 @@ void vector_to_queue(std::mutex& mutex, std::vector<std::string>& origin, std::q
 	finished = true;
 }
 
+void vector_to_queue_in_order(std::vector<std::string>& origin, std::queue<std::string>& destination) {
+	for (std::string& str : origin) {
+		destination.push(str);
+	}
+}
+
 void queue_to_vector(std::mutex& mutex, std::queue<std::string>& origin, bool& previous_over, std::vector<std::string>& destination) {
 	while (!origin.empty() || !previous_over) {
 		if (!origin.empty()) {
@@ -45,6 +51,13 @@ void queue_to_vector(std::mutex& mutex, std::queue<std::string>& origin, bool& p
 			origin.pop();
 			mutex.unlock();
 		}
+	}
+}
+
+void queue_to_vector_in_order(std::queue<std::string>& origin, std::vector<std::string>& destination) {
+	while (!origin.empty()) {
+		destination.push_back(origin.front());
+		origin.pop();
 	}
 }
 
@@ -63,6 +76,17 @@ void for_all(std::mutex& mutex, std::queue<std::string>& origin, bool& previous_
 	}
 
 	finished = true;
+}
+
+void for_all_in_order(std::queue<std::string>& origin, std::function<void(std::string&)> func,
+			 std::queue<std::string>& destination) {
+	while (!origin.empty()) {
+		std::string val(origin.front());
+		func(val);
+
+		origin.pop();
+		destination.push(val);
+	}
 }
 
 

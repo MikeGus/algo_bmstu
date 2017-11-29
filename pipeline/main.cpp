@@ -16,21 +16,16 @@ clock_t in_order(std::vector<std::string>& origin) {
 	std::function<void(std::string&)>up_case(to_upper_case);
 	std::function<void(std::string&)>ab(switch_ab);
 
-	std::mutex mutex;
 
 	std::vector<std::string> output;
-	bool initializing_over(false);
-	bool upper_over(false);
-	bool ab_switch_over(false);
-
 
 	clock_t start = clock();
-	vector_to_queue(std::ref(mutex), origin, starting_queue, initializing_over);
+	vector_to_queue_in_order(origin, starting_queue);
 
-	for_all(std::ref(mutex), starting_queue, initializing_over, up_case, to_upper_queue, upper_over);
-	for_all(std::ref(mutex), to_upper_queue, upper_over, ab, switch_ab_queue, ab_switch_over);
+	for_all_in_order(starting_queue, up_case, to_upper_queue);
+	for_all_in_order(to_upper_queue, ab, switch_ab_queue);
 
-	queue_to_vector(std::ref(mutex), switch_ab_queue, ab_switch_over, output);
+	queue_to_vector_in_order(switch_ab_queue, output);
 
 	clock_t end = clock() - start;
 
@@ -88,21 +83,25 @@ clock_t pipeline(std::vector<std::string>& origin) {
 int main()
 {
 	unsigned number = 10000;
-	unsigned length = 100;
-	std::vector<std::string> origin;
-	for (unsigned i = 0; i < number; ++i) {
-		origin.push_back(generate_string(length));
+	unsigned length = 8;
+
+	for (unsigned i = 0; i < 10; ++i) {
+		length *= 2;
+
+		std::vector<std::string> origin;
+		for (unsigned i = 0; i < number; ++i) {
+			origin.push_back(generate_string(length));
+		}
+
+		std::cout << "STRING LENGTH: " << length << std::endl;
+
+		clock_t time = in_order(origin);
+		std::cout << "TIME IN ORDER:\t" << time << std::endl;
+
+		clock_t time2 = pipeline(origin);
+		std::cout << "TIME IN PIPELINE:\t" << time2 << std::endl;
+		std::cout << "WINNING " << (((int) time == 0) ? (time) : ((time - time2) * 100 / (float) time)) << " %\n" << std::endl;
 	}
-
-	clock_t time;
-
-	std::cout << "STRING NUMBER: " << number << std::endl << "STRING LENGTH: " << length << std::endl;
-
-	time = in_order(origin);
-	std::cout << "TIME IN ORDER:\t" << time << std::endl;
-
-	time = pipeline(origin);
-	std::cout << "TIME IN PIPELINE:\t" << time << std::endl;
 
 
 	return 0;
