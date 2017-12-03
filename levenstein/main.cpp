@@ -5,18 +5,14 @@
 #include <ctime>
 
 
-int levensteinRecursive3(char* strOrig, char* strRes, unsigned long long& time) {
-
-	unsigned long long tickStart = __rdtsc();
+int levensteinRecursive3(char* strOrig, char* strRes) {
 
 	unsigned lenOrig = strlen(strOrig);
 	if (lenOrig == 0) {
-		time = __rdtsc() - tickStart;
 		return strlen(strRes);
 	}
 	unsigned lenRes = strlen(strRes);
 	if (lenRes == 0) {
-		time = __rdtsc() - tickStart;
 		return lenOrig;
 	}
 
@@ -25,28 +21,22 @@ int levensteinRecursive3(char* strOrig, char* strRes, unsigned long long& time) 
 		symbNotSame = true;
 	}
 
-	int result = std::min(std::min(levensteinRecursive3(strOrig + 1, strRes, time) + 1,
-						 levensteinRecursive3(strOrig, strRes + 1, time) + 1),
-					 levensteinRecursive3(strOrig + 1, strRes + 1, time) + symbNotSame);
-
-	time = __rdtsc() - tickStart;
+	int result = std::min(std::min(levensteinRecursive3(strOrig + 1, strRes) + 1,
+						 levensteinRecursive3(strOrig, strRes + 1) + 1),
+					 levensteinRecursive3(strOrig + 1, strRes + 1) + symbNotSame);
 
 	return result;
 }
 
 
-int levensteinIterative3(char* strOrig, char* strRes, unsigned long long& time) {
-
-	unsigned long long tickStart = __rdtsc();
+int levensteinIterative3(char* strOrig, char* strRes) {
 
 	unsigned lenOrig = strlen(strOrig);
 	if (lenOrig == 0) {
-		time = __rdtsc() - tickStart;
 		return strlen(strRes);
 	}
 	unsigned lenRes = strlen(strRes);
 	if (lenRes == 0) {
-		time = __rdtsc() - tickStart;
 		return lenOrig;
 	}
 
@@ -75,7 +65,6 @@ int levensteinIterative3(char* strOrig, char* strRes, unsigned long long& time) 
 		}
 		std::swap(storage[0], storage[1]);
 	}
-	time = __rdtsc() - tickStart;
 
 	int result = storage[0][columns - 1];
 	delete storage[0];
@@ -85,16 +74,14 @@ int levensteinIterative3(char* strOrig, char* strRes, unsigned long long& time) 
 }
 
 
-int levensteinIterative4(char* strOrig, char* strRes, unsigned long long& time) {
+int levensteinIterative4(char* strOrig, char* strRes) {
 
 	unsigned lenOrig = strlen(strOrig);
 	unsigned lenRes = strlen(strRes);
 
 	if (lenOrig < 2 || lenRes < 2) {
-		return levensteinIterative3(strOrig, strRes, time);
+		return levensteinIterative3(strOrig, strRes);
 	}
-
-	unsigned long long tickStart = __rdtsc();
 
 	unsigned columns = lenRes + 1;
 	unsigned rows = lenOrig + 1;
@@ -143,8 +130,6 @@ int levensteinIterative4(char* strOrig, char* strRes, unsigned long long& time) 
 		std::swap(storage[1], storage[2]);
 	}
 
-	time = __rdtsc() - tickStart;
-
 	int result = storage[1][columns - 1];
 	delete storage[0];
 	delete storage[1];
@@ -153,37 +138,62 @@ int levensteinIterative4(char* strOrig, char* strRes, unsigned long long& time) 
 	return result;
 }
 
+void testAlgo(int (*algo)(char*, char*), unsigned numberOfTests, char* str1, char* str2) {
+	for (unsigned i = 0; i < numberOfTests; ++i) {
+		algo(str1, str2);
+	}
+}
+
+char* generateRandomString(unsigned size, unsigned numberOfSymbols) {
+
+	char* result = new char[size + 1];
+
+	for (unsigned i = 0; i < size; ++i) {
+		result[i] = (char) (65 + rand() % numberOfSymbols);
+	}
+	result[size] = '\0';
+
+	return result;
+}
+
 
 int main()
 {
-	char str1[] = "abcd";
-	char str2[] = "badc";
 
-	int numberOfTests = 10;
+	srand(time(NULL));
 
-	unsigned long long recursiveTime = 0;
-	unsigned long long iterativeTime = 0;
-	unsigned long long iterative4Time = 0;
-	unsigned long long bufferTime = 0;
+	unsigned size1 = 100;
+	unsigned size2 = 100;
 
-	int resultRec = levensteinRecursive3(str1, str2, bufferTime);
-	int resultIt = levensteinIterative3(str1, str2, bufferTime);
-	int resultIt4 = levensteinIterative4(str1, str2, bufferTime);
+	unsigned numberOfSymbols = 2;
 
-	for (int i = 0; i < numberOfTests; ++i) {
-		levensteinRecursive3(str1, str2, bufferTime);
-		recursiveTime += bufferTime;
-		levensteinIterative3(str1, str2, bufferTime);
-		iterativeTime += bufferTime;
-		levensteinIterative4(str1, str2, bufferTime);
-		iterative4Time += bufferTime;
-	}
+	char* str1 = generateRandomString(size1, numberOfSymbols);
+	char* str2 = generateRandomString(size2, numberOfSymbols);
 
-	recursiveTime /= numberOfTests;
-	iterativeTime /= numberOfTests;
-	iterative4Time /= numberOfTests;
+//	std::cout << str1 << std::endl << str2;
 
-	std::cout << "recursive:\n" << resultRec << std::endl << recursiveTime << std::endl;
+	unsigned numberOfTests = 100;
+
+	std::clock_t beginTime = std::clock();
+//	testAlgo(levensteinRecursive3, numberOfTests, str1, str2);
+//	std::clock_t recursiveTime = std::clock() - beginTime;
+
+	beginTime = std::clock();
+	testAlgo(levensteinIterative3, numberOfTests, str1, str2);
+	std::clock_t iterativeTime = std::clock() - beginTime;
+
+	beginTime = std::clock();
+	testAlgo(levensteinIterative4, numberOfTests, str1, str2);
+	std::clock_t iterative4Time = std::clock() - beginTime;
+
+//	int resultRec = levensteinRecursive3(str1, str2);
+	int resultIt = levensteinIterative3(str1, str2);
+	int resultIt4 = levensteinIterative4(str1, str2);
+
+	delete[] str1;
+	delete[] str2;
+
+//	std::cout << "recursive:\n" << resultRec << std::endl << recursiveTime << std::endl;
 	std::cout << "iterative:\n" << resultIt << std::endl << iterativeTime << std::endl;
 	std::cout << "iterative4:\n" << resultIt4 << std::endl << iterative4Time << std::endl;
 

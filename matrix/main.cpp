@@ -11,11 +11,11 @@ class Matrix {
 		Matrix(const Matrix& other);
 		~Matrix();
 
-		Matrix classicMult(const Matrix& other, unsigned long long& time);
-		Matrix classicBufferMult(const Matrix& other, unsigned long long& time);
+		Matrix classicMult(const Matrix& other, std::clock_t& time);
+		Matrix classicBufferMult(const Matrix& other, std::clock_t& time);
 
-		Matrix vinogradMult(const Matrix& other, unsigned long long& time);
-		Matrix vinogradImprMult(const Matrix& other, unsigned long long& time);
+		Matrix vinogradMult(const Matrix& other, std::clock_t& time);
+		Matrix vinogradImprMult(const Matrix& other, std::clock_t& time);
 
 	private:
 		unsigned rows;
@@ -74,33 +74,35 @@ Matrix::~Matrix() {
 	delete[] data;
 }
 
-Matrix Matrix::classicMult(const Matrix &other, unsigned long long &time) {
+Matrix Matrix::classicMult(const Matrix &other, std::clock_t& time) {
 	if (columns != other.rows) {
 		throw std::logic_error("Sizes don't match!");
 	}
 	Matrix result(rows, other.columns);
 
-	unsigned long long tickStart = __rdtsc();
+	std::clock_t start = std::clock();
+
 	for (unsigned i = 0; i < rows; ++i) {
 		for (unsigned j = 0; j < columns; ++j) {
 			data[i][j] = 0;
 			for (unsigned index = 0; index < columns; ++index) {
-				data[i][j] += data[i][index] * other.data[index][j];
+				data[i][j] = data[i][j] + data[i][index] * other.data[index][j];
 			}
 		}
 	}
-	time = __rdtsc() - tickStart;
+	time = std::clock() - start;
 
 	return result;
 }
 
-Matrix Matrix::classicBufferMult(const Matrix &other, unsigned long long &time) {
+Matrix Matrix::classicBufferMult(const Matrix &other, std::clock_t& time) {
 	if (columns != other.rows) {
 		throw std::logic_error("Sizes don't match!");
 	}
 	Matrix result(rows, other.columns);
 
-	unsigned long long tickStart = __rdtsc();
+	std::clock_t start = std::clock();
+
 	for (unsigned i = 0; i < rows; ++i) {
 		for (unsigned j = 0; j < columns; ++j) {
 			unsigned buffer = 0;
@@ -110,11 +112,13 @@ Matrix Matrix::classicBufferMult(const Matrix &other, unsigned long long &time) 
 			data[i][j] = buffer;
 		}
 	}
-	time = __rdtsc() - tickStart;
+
+	time = std::clock() - start;
 
 	return result;
 }
-Matrix Matrix::vinogradMult(const Matrix &other, unsigned long long &time) {
+
+Matrix Matrix::vinogradMult(const Matrix &other, std::clock_t& time) {
 	if (columns != other.rows) {
 		throw std::logic_error("Sizes don't match!");
 	}
@@ -123,19 +127,19 @@ Matrix Matrix::vinogradMult(const Matrix &other, unsigned long long &time) {
 	unsigned* rowFactor = new unsigned[rows];
 	unsigned* columnFactor = new unsigned[columns];
 
-	unsigned long long tickStart = __rdtsc();
+	std::clock_t start = std::clock();
 
 	for (unsigned i = 0; i < rows; ++i) {
 		rowFactor[i] = data[i][0] * data[i][1];
 		for (unsigned j = 2; j < columns - 1; j += 2) {
-			rowFactor[i] += data[i][j] * data[i][j + 1];
+			rowFactor[i] = rowFactor[i] + data[i][j] * data[i][j + 1];
 		}
 	}
 
 	for (unsigned i = 0; i < other.columns; ++i) {
-		columnFactor[i] = data[0][i] * data[1][i];
+		columnFactor[i] = other.data[0][i] * other.data[1][i];
 		for (unsigned j = 2; j < other.rows - 1; j += 2) {
-			columnFactor[i] += data[j][i] * data[j + 1][i];
+			columnFactor[i] = columnFactor[i] + other.data[j][i] * other.data[j + 1][i];
 		}
 	}
 
@@ -143,23 +147,23 @@ Matrix Matrix::vinogradMult(const Matrix &other, unsigned long long &time) {
 		for (unsigned j = 0; j < other.columns; ++j) {
 			result.data[i][j] = 0;
 			for (unsigned k = 0; k < columns - 1; k += 2) {
-				result.data[i][j] += (data[i][k] + other.data[k + 1][j]) *
+				result.data[i][j] = result.data[i][j] + (data[i][k] + other.data[k + 1][j]) *
 						(data[i][k + 1] + other.data[k][j]);
 			}
-			result.data[i][j] -= (rowFactor[i] + columnFactor[j]);
+			result.data[i][j] = result.data[i][j] - (rowFactor[i] + columnFactor[j]);
 		}
 	}
 
 	if (columns % 2 != 0) {
 		unsigned columnsDiv2 = columns / 2;
 		for (unsigned i = 0; i < rows; ++i) {
-			for (unsigned j = 0; j < columns; ++j) {
-				result.data[i][j] += data[i][columnsDiv2] * other.data[columnsDiv2][j];
+			for (unsigned j = 0; j < other.columns; ++j) {
+				result.data[i][j] = result.data[i][j] + data[i][columnsDiv2] * other.data[columnsDiv2][j];
 			}
 		}
 	}
 
-	time = __rdtsc() - tickStart;
+	time = std::clock() - start;
 
 	delete[] columnFactor;
 	delete[] rowFactor;
@@ -167,7 +171,7 @@ Matrix Matrix::vinogradMult(const Matrix &other, unsigned long long &time) {
 	return result;
 }
 
-Matrix Matrix::vinogradImprMult(const Matrix &other, unsigned long long &time) {
+Matrix Matrix::vinogradImprMult(const Matrix &other, std::clock_t& time) {
 	if (columns != other.rows) {
 		throw std::logic_error("Sizes don't match!");
 	}
@@ -176,7 +180,7 @@ Matrix Matrix::vinogradImprMult(const Matrix &other, unsigned long long &time) {
 	unsigned* rowFactor = new unsigned[rows];
 	unsigned* columnFactor = new unsigned[columns];
 
-	unsigned long long tickStart = __rdtsc();
+	std::clock_t start = std::clock();
 
 	for (unsigned i = 0; i < rows; ++i) {
 		rowFactor[i] = data[i][0] * data[i][1];
@@ -188,10 +192,10 @@ Matrix Matrix::vinogradImprMult(const Matrix &other, unsigned long long &time) {
 	}
 
 	for (unsigned i = 0; i < other.columns; ++i) {
-		columnFactor[i] = data[0][i] * data[1][i];
+		columnFactor[i] = other.data[0][i] * other.data[1][i];
 		unsigned buffer = columnFactor[i];
 		for (unsigned j = 2; j < other.rows - 1; j += 2) {
-			buffer += data[j][i] * data[j + 1][i];
+			buffer += other.data[j][i] * other.data[j + 1][i];
 		}
 		columnFactor[i] = buffer;
 	}
@@ -211,13 +215,13 @@ Matrix Matrix::vinogradImprMult(const Matrix &other, unsigned long long &time) {
 	if (columns % 2 != 0) {
 		unsigned columnsDiv2 = columns / 2;
 		for (unsigned i = 0; i < rows; ++i) {
-			for (unsigned j = 0; j < columns; ++j) {
+			for (unsigned j = 0; j < other.columns; ++j) {
 				result.data[i][j] += data[i][columnsDiv2] * other.data[columnsDiv2][j];
 			}
 		}
 	}
 
-	time = __rdtsc() - tickStart;
+	time = std::clock() - start;
 
 	delete[] columnFactor;
 	delete[] rowFactor;
@@ -227,27 +231,25 @@ Matrix Matrix::vinogradImprMult(const Matrix &other, unsigned long long &time) {
 
 int main()
 {
-	unsigned size = 600;
+	unsigned size = 500;
 	unsigned topRandom = 1000;
 
 	Matrix original(topRandom, size, size);
 	Matrix mult(topRandom, size, size);
 
-	unsigned long long timeClassic = 0;
-
-	unsigned long long timeClassicBuffer = 0;
-	unsigned long long timeVinograd = 0;
-	unsigned long long timeVinogradImpr = 0;
+	std::clock_t timeClassic = 0;
+	std::clock_t timeClassicBuffer = 0;
+	std::clock_t timeVinograd = 0;
+	std::clock_t timeVinogradImpr = 0;
 
 	unsigned numberOfTests = 10;
-	unsigned long long buffer = 0;
+	std::clock_t buffer = 0;
 
 	std::cout << "Counting classic...";
 	for (unsigned i = 0; i < numberOfTests; ++i) {
 		original.classicMult(mult, buffer);
 		timeClassic += buffer;
 	}
-	timeClassic /= numberOfTests;
 	std::cout << "  finished in " << timeClassic << " ticks!" << std::endl;
 
 	std::cout << "Counting classic+buffer...";
@@ -255,7 +257,6 @@ int main()
 		original.classicBufferMult(mult, buffer);
 		timeClassicBuffer += buffer;
 	}
-	timeClassicBuffer /= numberOfTests;
 
 	std::cout << "  finished in " << timeClassicBuffer << " ticks!" << std::endl;
 
@@ -264,7 +265,6 @@ int main()
 		original.vinogradMult(mult, buffer);
 		timeVinograd += buffer;
 	}
-	timeVinograd /= numberOfTests;
 	std::cout << "  finished in " << timeVinograd << " ticks!" << std::endl;
 
 
@@ -273,7 +273,6 @@ int main()
 		original.vinogradImprMult(mult, buffer);
 		timeVinogradImpr += buffer;
 	}
-	timeVinogradImpr /= numberOfTests;
 	std::cout << "  finished in " << timeVinogradImpr << " ticks!" << std::endl;
 
 	if (timeClassicBuffer < timeVinograd) {

@@ -3,9 +3,9 @@
 #include <ctime>
 #include <stdint.h>
 
-void bubbleSort(int*& array, unsigned size, unsigned long long& time) {
+void bubbleSort(int*& array, unsigned size, clock_t& time) {
 
-	unsigned long long tickStart = __rdtsc();
+	clock_t tickStart = clock();
 	bool swapped = true;
 	unsigned iMaxPos = size - 1;
 	unsigned jMaxPos = size - 1;
@@ -18,13 +18,13 @@ void bubbleSort(int*& array, unsigned size, unsigned long long& time) {
 			}
 		}
 	}
-	time = __rdtsc() - tickStart;
+	time = clock() - tickStart;
 }
 
 
-void selectionSort(int*& array, unsigned arraySize, unsigned long long& time) {
+void selectionSort(int*& array, unsigned arraySize, clock_t& time) {
 
-	unsigned long long tickStart = __rdtsc();
+	clock_t tickStart = clock();
 
 	unsigned maxI = arraySize - 1;
 	for (unsigned i = 0; i < maxI; ++i) {
@@ -37,12 +37,12 @@ void selectionSort(int*& array, unsigned arraySize, unsigned long long& time) {
 		std::swap(array[i], array[minIndex]);
 	}
 
-	time = __rdtsc() - tickStart;
+	time = clock() - tickStart;
 }
 
-void insertionSort(int*& array, unsigned arraySize, unsigned long long& time) {
+void insertionSort(int*& array, unsigned arraySize, clock_t& time) {
 
-	unsigned long long tickStart = __rdtsc();
+	clock_t tickStart = clock();
 
 	for (unsigned i = 1; i < arraySize; ++i) {
 		int currentElement = array[i];
@@ -61,7 +61,7 @@ void insertionSort(int*& array, unsigned arraySize, unsigned long long& time) {
 		}
 	}
 
-	time = __rdtsc() - tickStart;
+	time = clock() - tickStart;
 }
 
 
@@ -92,7 +92,6 @@ void fillArray(int*& array, unsigned arraySize, int key = 0) {
 	}
 }
 
-
 int* makeArray(unsigned arraySize, int key = 0) {
 	int* array = new int[arraySize];
 	fillArray(array, arraySize, key);
@@ -100,17 +99,17 @@ int* makeArray(unsigned arraySize, int key = 0) {
 }
 
 
-void testAlgorithm(unsigned arraySize, void (*func)(int*&, unsigned, unsigned long long&), unsigned numberOfTests = 10) {
+void testAlgorithm(unsigned arraySize, void (*func)(int*&, unsigned, clock_t&), unsigned numberOfTests = 10) {
 
-	unsigned long long sortTimeBest = 0;
-	unsigned long long sortTimeWorst = 0;
-	unsigned long long sortTimeRandom = 0;
+	clock_t sortTimeBest = 0;
+	clock_t sortTimeWorst = 0;
+	clock_t sortTimeRandom = 0;
 
 	int* arrayBest = makeArray(arraySize, 1);
 	int* arrayWorst = makeArray(arraySize, -1);
 	int* arrayRandom = makeArray(arraySize);
 
-	unsigned long long bufferTime = 0;
+	clock_t bufferTime;
 	for (unsigned i = 0; i < numberOfTests; ++i){
 		func(arrayBest, arraySize, bufferTime);
 		sortTimeBest += bufferTime;
@@ -124,10 +123,6 @@ void testAlgorithm(unsigned arraySize, void (*func)(int*&, unsigned, unsigned lo
 		fillArray(arrayRandom, arraySize, 0);
 	}
 
-	sortTimeBest /= numberOfTests;
-	sortTimeWorst /= numberOfTests;
-	sortTimeRandom /= numberOfTests;
-
 	std::cout << "BEST:   " << sortTimeBest << std::endl;
 	std::cout << "WORST:  " << sortTimeWorst << std::endl;
 	std::cout << "RANDOM: " << sortTimeRandom << std::endl;
@@ -139,17 +134,21 @@ void testAlgorithm(unsigned arraySize, void (*func)(int*&, unsigned, unsigned lo
 
 int main()
 {
-	unsigned arraySize = 5000;
+
 	unsigned numberOfTests = 100;
+	std::vector<unsigned> sizes = {1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000};
+	for (unsigned arraySize : sizes) {
+		std::cout << "\narraySize: " << arraySize << std::endl;
 
-	std::cout << "\nSelection sort:" << std::endl;
-	testAlgorithm(arraySize, selectionSort, numberOfTests);
+		std::cout << "Selection sort:" << std::endl;
+		testAlgorithm(arraySize, selectionSort, numberOfTests);
 
-	std::cout << "\nInsertion sort:" << std::endl;
-	testAlgorithm(arraySize, insertionSort, numberOfTests);
+		std::cout << "\nInsertion sort:" << std::endl;
+		testAlgorithm(arraySize, insertionSort, numberOfTests);
 
-	std::cout << "\nBubble sort:" << std::endl;
-	testAlgorithm(arraySize, bubbleSort, numberOfTests);
+		std::cout << "\nBubble sort:" << std::endl;
+		testAlgorithm(arraySize, bubbleSort, numberOfTests);
+	}
 
 	return 0;
 }
