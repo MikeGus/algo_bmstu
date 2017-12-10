@@ -3,7 +3,7 @@
 #include <cmath>
 
 const double acc = 1e-4;
-const unsigned size = 3;
+const unsigned size = 4;
 
 double gauss(unsigned m, double** A) {
 	double result = 1;
@@ -44,9 +44,10 @@ int main() {
 		A[i] = new double[size];
 	}
 
-	double newA[][3] = {{0, 1, 2},
-				   {5, -3, 7},
-				   {8, 4, 11}};
+	double newA[][4] = {{0, 2, 4, 3},
+					{1, 3, 7, 8},
+					{5, 6, 3, 2},
+					{0, 1, 1, 3}};
 
 	for (unsigned i = 0; i < size; ++i) {
 		for (unsigned j = 0; j < size; ++j) {

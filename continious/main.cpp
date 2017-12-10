@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 class AverageCounter {
 	public:
@@ -40,11 +41,12 @@ double AverageCounter::getAverage() {
 
 int main()
 {
+
 	AverageCounter counter;
-	std::cout << "Type value: ";
+//	std::cout << "Type value: ";
 	while (std::cin >> counter) {
 		std::cout << counter << std::endl;
-		std::cout << "Type value: ";
+//		std::cout << "Type value: ";
 	}
 	std::cout << "\nEND OF INPUT" << std::endl;
 	return 0;

@@ -15,10 +15,10 @@ int main()
 	out.open("out.txt");
 
 
-	unsigned numberOfTests = 1000;
+	unsigned numberOfTests = 100;
 	std::clock_t buffer = 0;
 
-	for (unsigned i = 1; i <= 10; ++i) {
+	for (unsigned i = 1; i <= 2; ++i) {
 		size *= i;
 
 		Matrix original(topRandom, size, size);
@@ -33,8 +33,8 @@ int main()
 				original.vinogradParallel(mult, numberOfThreads, buffer);
 				result += buffer;
 			}
-			out << "NUMBER OF THREADS: " << numberOfThreads << std::endl << "TIME: " << result << std::endl;
-			std::cout << "END " << i << std::endl;
+			std::cout << "NUMBER OF THREADS: " << numberOfThreads << std::endl << "TIME: " << result << std::endl;
+//			std::cout << "END " << i << std::endl;
 		}
 
 		size /= i;
