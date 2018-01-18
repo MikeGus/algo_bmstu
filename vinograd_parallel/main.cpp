@@ -13,8 +13,8 @@ class Matrix {
 		Matrix vinogradMultParallel(const Matrix& other, std::clock_t& time);
 
 	private:
-		void column_factor(unsigned*& columnFactor);
-		void row_factor(unsigned*& rowFactor);
+		void column_factor(unsigned*& columnFactor) const;
+		void row_factor(unsigned*& rowFactor) const;
 
 		unsigned rows;
 		unsigned columns;
@@ -72,7 +72,7 @@ Matrix::~Matrix() {
 	delete[] data;
 }
 
-void Matrix::row_factor(unsigned*& rowFactor) {
+void Matrix::row_factor(unsigned*& rowFactor) const {
 	rowFactor = new unsigned[rows];
 	for (unsigned i = 0; i < rows; ++i) {
 		rowFactor[i] = data[i][0] * data[i][1];
@@ -84,7 +84,7 @@ void Matrix::row_factor(unsigned*& rowFactor) {
 	}
 }
 
-void Matrix::column_factor(unsigned*& columnFactor) {
+void Matrix::column_factor(unsigned*& columnFactor) const {
 
 	columnFactor = new unsigned[columns];
 
@@ -152,9 +152,9 @@ Matrix Matrix::vinogradMultParallel(const Matrix &other, std::clock_t& time) {
 	std::clock_t start = std::clock();
 
 	unsigned* rowFactor = nullptr;
-	std::thread t1(&Matrix::row_factor, this, rowFactor);
+	std::thread t1(&Matrix::row_factor, this, std::ref(rowFactor));
 	unsigned* columnFactor = nullptr;
-	std::thread t2(&Matrix::column_factor, &other, columnFactor);
+	std::thread t2(&Matrix::column_factor, &other, std::ref(columnFactor));
 
 	t1.join();
 	t2.join();

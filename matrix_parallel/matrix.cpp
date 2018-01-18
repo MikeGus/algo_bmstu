@@ -227,7 +227,7 @@ Matrix Matrix::vinogradParallel(const Matrix& other, const unsigned numberOfThre
 	const double rowFactorThreadSize = rows / (double) numberOfThreads;
 	unsigned minRow = 0;
 	for (unsigned i = 0; i < numberOfThreads; ++i, minRow += rowFactorThreadSize) {
-		threadVector.push_back(std::thread(Matrix::countRowFactor, this, minRow, (unsigned) rowFactorThreadSize, rowFactor));
+		threadVector.push_back(std::thread(&Matrix::countRowFactor, this, minRow, (unsigned) rowFactorThreadSize, rowFactor));
 	}
 	for (std::thread& thread : threadVector) {
 		if (thread.joinable()) {
@@ -239,7 +239,7 @@ Matrix Matrix::vinogradParallel(const Matrix& other, const unsigned numberOfThre
 	const double columnFactorThreadSize = other.columns / (double) numberOfThreads;
 	unsigned minColumn = 0;
 	for (unsigned i = 0; i < numberOfThreads; ++i, minColumn += columnFactorThreadSize) {
-		threadVector.push_back(std::thread(Matrix::countColumnFactor, &other, minColumn,
+		threadVector.push_back(std::thread(&Matrix::countColumnFactor, &other, minColumn,
 										  (unsigned) columnFactorThreadSize, columnFactor));
 	}
 	for (std::thread& thread : threadVector) {
@@ -252,7 +252,7 @@ Matrix Matrix::vinogradParallel(const Matrix& other, const unsigned numberOfThre
 	const double rowByThread = rows / (double) numberOfThreads;
 	minRow = 0;
 	for (unsigned i = 0; i < numberOfThreads; ++i, minRow += rowByThread) {
-		threadVector.push_back(std::thread(Matrix::countPartialVinograd, this, std::ref(other), minRow, rowByThread,
+		threadVector.push_back(std::thread(&Matrix::countPartialVinograd, this, std::ref(other), minRow, rowByThread,
 										   rowFactor, columnFactor, std::ref(result)));
 	}
 	for (std::thread& thread : threadVector) {
@@ -265,7 +265,7 @@ Matrix Matrix::vinogradParallel(const Matrix& other, const unsigned numberOfThre
 		threadVector.clear();
 		minRow = 0;
 		for (unsigned i = 0; i < numberOfThreads; ++i, minRow += rowByThread) {
-			threadVector.push_back(std::thread(Matrix::unevenVinograd, this, std::ref(other), minRow, rowByThread,
+			threadVector.push_back(std::thread(&Matrix::unevenVinograd, this, std::ref(other), minRow, rowByThread,
 											   std::ref(result)));
 		}
 
